@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qurry.Core", "src\Qurry.Core\Qurry.Core.csproj", "{EAEDF59E-7411-4C19-88CA-C62EDDD08FC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qurry.Core.Tests", "tests\Qurry.Core.Tests\Qurry.Core.Tests.csproj", "{A3228F1E-1FB9-4C4C-95A3-FC0EAF3AB090}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAEDF59E-7411-4C19-88CA-C62EDDD08FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAEDF59E-7411-4C19-88CA-C62EDDD08FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAEDF59E-7411-4C19-88CA-C62EDDD08FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAEDF59E-7411-4C19-88CA-C62EDDD08FC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3228F1E-1FB9-4C4C-95A3-FC0EAF3AB090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3228F1E-1FB9-4C4C-95A3-FC0EAF3AB090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3228F1E-1FB9-4C4C-95A3-FC0EAF3AB090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3228F1E-1FB9-4C4C-95A3-FC0EAF3AB090}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {440C7C7E-003D-42D0-87B3-78E6FD26D7D1}
+	EndGlobalSection
+EndGlobal
