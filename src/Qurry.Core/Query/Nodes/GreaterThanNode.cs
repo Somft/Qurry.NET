@@ -10,7 +10,8 @@ namespace Qurry.Core.Query.Nodes
 
         public override Expression ToExpression<T>(IPropertyResolver propertyResolver)
         {
-            return Expression.GreaterThan(this.Left.ToExpression<T>(propertyResolver), this.Right.ToExpression<T>(propertyResolver));
+            (Expression left, Expression right) = this.TryAlignTypes<T>(propertyResolver);
+            return Expression.GreaterThan(left, right);
         }
     }
 }

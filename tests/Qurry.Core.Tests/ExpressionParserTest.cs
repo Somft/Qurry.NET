@@ -17,7 +17,7 @@ namespace Qurry.Core.Tests
             var resolver = new DbContextPropertyResolver<TestDbContext>();
             var expParser = new ExpressionParser(parser, resolver);
 
-            System.Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
+            Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
                  "StringValue = 'hello_world'"
                  ).Compile();
 
@@ -32,7 +32,7 @@ namespace Qurry.Core.Tests
             var resolver = new DbContextPropertyResolver<TestDbContext>();
             var expParser = new ExpressionParser(parser, resolver);
 
-            System.Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
+            Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
                 "BoolValue or 10 - 1 / 5 * 2 + 1 - 5 * 10= 2  and false or false and 5.3 > 10.2 and 'asd' = 'asd'"
                 ).Compile();
 
@@ -61,6 +61,35 @@ namespace Qurry.Core.Tests
             {
                 StringField = "NOT_TEST",
             } }));
+        }
+
+        [Fact]
+        public void DateTimeQueryTest()
+        {
+            var parser = new QueryParser();
+            var resolver = new DbContextPropertyResolver<TestDbContext>();
+            var expParser = new ExpressionParser(parser, resolver);
+
+            string dateTimeValue = "2020-12-20";
+
+            Expression<Func<TestFooClass, bool>> expression = expParser.ParseExpression<TestFooClass>(
+              $"DateTimeField >= '{dateTimeValue}'"
+              );
+
+            Func<TestFooClass, bool> lambda = expression.Compile();
+
+            Assert.True(lambda.Invoke(new TestFooClass
+            {
+                DateTimeField = DateTime.Parse(dateTimeValue)
+            }));
+            Assert.True(lambda.Invoke(new TestFooClass
+            {
+                DateTimeField = DateTime.Parse(dateTimeValue).AddHours(1)
+            }));
+            Assert.False(lambda.Invoke(new TestFooClass
+            {
+                DateTimeField = DateTime.Parse(dateTimeValue).AddHours(-1)
+            }));
         }
     }
 }
