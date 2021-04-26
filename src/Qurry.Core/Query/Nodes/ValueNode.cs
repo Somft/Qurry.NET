@@ -39,7 +39,7 @@ namespace Qurry.Core.Query.Nodes
                 return Expression.Constant(this.Value[1..^1]);
             }
 
-            return propertyResolver.ResolveProperty<T>(this.Value) ?? throw new InvalidQueryException();
+            return propertyResolver.ResolveProperty<T>(this.Value, true) ?? throw new InvalidQueryException();
         }
     }
 }

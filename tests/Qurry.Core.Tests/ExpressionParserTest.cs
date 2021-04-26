@@ -1,7 +1,8 @@
 
-using Microsoft.EntityFrameworkCore;
-
 using Qurry.Core.Query;
+
+using System;
+using System.Linq.Expressions;
 
 using Xunit;
 
@@ -16,12 +17,12 @@ namespace Qurry.Core.Tests
             var resolver = new DbContextPropertyResolver<TestDbContext>();
             var expParser = new ExpressionParser(parser, resolver);
 
-            System.Func<TestClass, bool>? expression = expParser.ParseExpression<TestClass>(
-                 "StringValue = 'helloworld'"
+            System.Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
+                 "StringValue = 'hello_world'"
                  ).Compile();
 
-            Assert.True(expression.Invoke(new TestClass() { StringValue = "helloworld" }));
-            Assert.False(expression.Invoke(new TestClass() { StringValue = "invalid_value" }));
+            Assert.True(expression.Invoke(new TestFooClass() { StringValue = "hello_world" }));
+            Assert.False(expression.Invoke(new TestFooClass() { StringValue = "invalid_value" }));
         }
 
         [Fact]
@@ -31,27 +32,35 @@ namespace Qurry.Core.Tests
             var resolver = new DbContextPropertyResolver<TestDbContext>();
             var expParser = new ExpressionParser(parser, resolver);
 
-            System.Func<TestClass, bool>? expression = expParser.ParseExpression<TestClass>(
+            System.Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
                 "BoolValue or 10 - 1 / 5 * 2 + 1 - 5 * 10= 2  and false or false and 5.3 > 10.2 and 'asd' = 'asd'"
                 ).Compile();
 
-            Assert.True(expression.Invoke(new TestClass() { BoolValue = true }));
-            Assert.False(expression.Invoke(new TestClass() { BoolValue = false }));
+            Assert.True(expression.Invoke(new TestFooClass() { BoolValue = true }));
+            Assert.False(expression.Invoke(new TestFooClass() { BoolValue = false }));
         }
 
-        private class TestDbContext
+        [Fact]
+        public void NestedFieldsQueryTest()
         {
-            public DbSet<TestClass> Table { get; set; } = null!;
-        }
+            var parser = new QueryParser();
+            var resolver = new DbContextPropertyResolver<TestDbContext>();
+            var expParser = new ExpressionParser(parser, resolver);
 
-        private class TestClass
-        {
-            public string StringValue { get; set; } = "";
+            Expression<Func<TestFooClass, bool>> expression = expParser.ParseExpression<TestFooClass>(
+              "BarValue.StringField = 'TEST'"
+              );
 
-            public bool BoolValue { get; set; }
-
-            public int IntValue { get; set; }
-
+            Func<TestFooClass, bool> lambda = expression.Compile();
+            
+            Assert.True(lambda.Invoke(new TestFooClass { BarValue = new TestBarClass
+            {
+                StringField = "TEST",
+            } }));
+            Assert.False(lambda.Invoke(new TestFooClass { BarValue = new TestBarClass
+            {
+                StringField = "NOT_TEST",
+            } }));
         }
     }
 }

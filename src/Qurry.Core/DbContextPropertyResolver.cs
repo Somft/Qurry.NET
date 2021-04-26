@@ -28,7 +28,8 @@ namespace Qurry.Core
                 .Where(pt => pt.GetGenericTypeDefinition() == typeof(DbSet<>))
                 .Select(pt => pt.GetGenericArguments().FirstOrDefault())
                 .ToDictionary(pt => pt, pt => Expression.Parameter(pt, pt.FullName));
-
+            
+            this.SupportedTypes.AddRange(Parameters.Keys);
 
             this.Properties = this.Parameters
                 .ToDictionary(pt => pt.Key, pt => pt.Key
@@ -39,10 +40,20 @@ namespace Qurry.Core
 
         public Expression? ResolveProperty<T>(string propertyName, bool allowNesting)
         {
-            Dictionary<string, MemberExpression>? fields = this.Properties[typeof(T)]
+            Dictionary<string, MemberExpression> fields = this.Properties[typeof(T)]
                 ?? throw new InvalidOperationException();
 
-            return fields[propertyName.ToLowerInvariant()];
+            if (!propertyName.Contains(".") || !allowNesting)
+            {
+                return fields[propertyName.ToLowerInvariant()];
+            }
+            
+            int split = propertyName.LastIndexOf('.');
+            string prefix = propertyName[..split];
+            string suffix = propertyName[(split + 1)..];
+            Expression? subProperty = ResolveProperty<T>(prefix, true);
+
+            return subProperty == null ? null : Expression.PropertyOrField(subProperty, suffix);
         }
 
         public ParameterExpression ResolveParameter<T>()
