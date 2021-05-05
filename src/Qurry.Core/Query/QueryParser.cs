@@ -62,12 +62,12 @@ namespace Qurry.Core.Query
             return this.Parse(queryParts);
         }
 
-        protected virtual IQuery Parse(List<string> expressions)
+        protected virtual IQuery Parse(List<Node> expressions)
         {
             return new QueryImplementation(this.ParseNode(expressions));
         }
 
-        protected virtual IQueryNode ParseNode(List<string> expressions)
+        protected virtual IQueryNode ParseNode(List<Node> expressions)
         {
             if (expressions.Count() == 2)
             {
@@ -76,12 +76,19 @@ namespace Qurry.Core.Query
             }
             else if (expressions.Count() == 1)
             {
-                return new ValueNode(expressions.First());
+                Node node = expressions.First();
+
+                if (node.Elements != null)
+                {
+                    return this.ParseNode(node.Elements);
+                }
+
+                return new ValueNode(expressions.First().Element!);
             }
 
             foreach ((string name, NodeFactory factory) in operators)
             {
-                int index = expressions.FindIndex((op) => op == name);
+                int index = expressions.FindIndex((op) => op.Element == name);
 
                 if (index != -1)
                 {
@@ -103,30 +110,70 @@ namespace Qurry.Core.Query
         private class BracketAggregationAccumulator
         {
             public int Brackets { get; set; } = 0;
-            public List<string> Result { get; set; } = new List<string>();
+            public List<Node> Result { get; set; } = new List<Node>();
+
+            public Stack<List<Node>> BracketStack = new Stack<List<Node>>();
 
             public BracketAggregationAccumulator AddPart(string element)
             {
-
-                if (this.Brackets == 0)
+                if (element == "(" || element == ")")
                 {
-                    this.Result.Add(element);
+                    if (element == "(")
+                    {
+                        this.Brackets++;
+                        this.BracketStack.Push(new List<Node>());
+                    }
+                    else if (element == ")")
+                    {
+                        this.Brackets--;
+
+                        if (this.Brackets < 0)
+                        {
+                            throw new InvalidQueryException("Unexpected closing bracket");
+                        }
+                        if (this.Brackets == 0)
+                        {
+                            this.Result.Add(new Node(BracketStack.Pop()));
+                        } 
+                        else
+                        {
+                            List<Node> last = BracketStack.Pop();
+                            this.BracketStack.Peek().Add(new Node(last));
+                        }        
+                    }
                 }
                 else
                 {
-                    this.Result[^1] += " " + element;
-                }
-
-                if (element == "(")
-                {
-                    this.Brackets++;
-                }
-                else if (element == ")")
-                {
-                    this.Brackets--;
+                    if (this.Brackets == 0)
+                    {
+                        this.Result.Add(new Node(element));
+                    } 
+                    else
+                    {
+                        this.BracketStack.Peek().Add(new Node(element));
+                    }
                 }
 
                 return this;
+            }
+        }
+
+        protected struct Node
+        {
+            public string? Element { get; set; }
+
+            public List<Node>? Elements { get; set; }
+
+            public Node(string element)
+            {
+                this.Element = element;
+                this.Elements = null;
+            }
+
+            public Node(List<Node> elements)
+            {
+                this.Element = null;
+                this.Elements = elements;
             }
         }
     }
