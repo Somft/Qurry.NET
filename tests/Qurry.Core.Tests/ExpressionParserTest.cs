@@ -33,7 +33,7 @@ namespace Qurry.Core.Tests
             var expParser = new ExpressionParser(parser, resolver);
 
             Func<TestFooClass, bool> expression = expParser.ParseExpression<TestFooClass>(
-                "BoolValue or 10 - (1 / 5 * 2) + 1 - (5 + 8 - 2 * (2 + 2)) * 10= 2  and false or false and 5.3 > 10.2 and 'asd' = \"asd\""
+                "BoolValue or 10 - (1 / 5 * 2) + 1 - (5 + 8 - 2 * (2 + 2)) * 10= 2  and false or false and 5.3 > 10.2 and 'a sd' = \"a sd\""
                 ).Compile();
 
             Assert.True(expression.Invoke(new TestFooClass() { BoolValue = true }));

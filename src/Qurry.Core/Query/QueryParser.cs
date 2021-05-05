@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Qurry.Core.Query
@@ -54,7 +55,7 @@ namespace Qurry.Core.Query
             }
 
             var queryParts = this.GetCleanExpression(query)
-                .Split(' ')
+                .Aggregate(new SplittingAggrecationAccumulator(), (ac, element) => ac.Next(element)).GetResult()
                 .Where(part => !string.IsNullOrWhiteSpace(part))
                 .Aggregate(new BracketAggregationAccumulator(), (ac, element) => ac.AddPart(element)).Result
                 .ToList();
@@ -139,7 +140,7 @@ namespace Qurry.Core.Query
                         {
                             List<Node> last = BracketStack.Pop();
                             this.BracketStack.Peek().Add(new Node(last));
-                        }        
+                        }
                     }
                 }
                 else
@@ -147,7 +148,7 @@ namespace Qurry.Core.Query
                     if (this.Brackets == 0)
                     {
                         this.Result.Add(new Node(element));
-                    } 
+                    }
                     else
                     {
                         this.BracketStack.Peek().Add(new Node(element));
@@ -174,6 +175,53 @@ namespace Qurry.Core.Query
             {
                 this.Element = null;
                 this.Elements = elements;
+            }
+        }
+
+        private class SplittingAggrecationAccumulator
+        {
+            private readonly List<string> result = new List<string>();
+            private readonly StringBuilder last = new StringBuilder();
+
+            private char str = '0';
+            private bool inStr = false;
+
+            public SplittingAggrecationAccumulator Next(char element)
+            {
+                if (element == ' ')
+                {
+                    if (!inStr)
+                    {
+
+                        this.result.Add(last.ToString());
+                        last.Clear();
+                    }
+                    else
+                    {
+                        last.Append(element);
+                    }
+                }
+                else
+                {
+                    if (!inStr && (element == '\'' || element == '"'))
+                    {
+                        inStr = true;
+                        str = element;
+                    }
+                    else if (inStr && element == str)
+                    {
+                        inStr = false;
+                    }
+
+                    last.Append(element);
+                }
+
+                return this;
+            }
+
+            public IEnumerable<string> GetResult()
+            {
+                return this.result.Append(last.ToString());
             }
         }
     }
